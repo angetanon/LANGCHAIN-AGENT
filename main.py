@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langchain.tools import tool
 from langchain_community.tools.tavily_search import TavilySearchResults
+from langchain_core.prompts import PromptTemplate
 
 
 from langchain_classic.agents import create_react_agent, AgentExecutor
@@ -80,6 +81,13 @@ prompt = Client().pull_prompt(
     "hwchase17/react",
     include_model=False,
     dangerously_pull_public_prompt=True,
+)
+prompt = PromptTemplate.from_template(
+    "Answer in the same language as the user's question. "
+    "Keep proper nouns and technical terms unchanged when appropriate.\n\n"
+    + prompt.template,
+    template_format=prompt.template_format,
+    metadata=prompt.metadata,
 )
 
 # ==========================================

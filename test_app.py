@@ -123,6 +123,17 @@ class WeatherTests(unittest.TestCase):
 
 
 class AgentTests(unittest.TestCase):
+    def test_language_instruction_is_added_to_prompt(self) -> None:
+        prompt = PromptTemplate.from_template("{input}\n{agent_scratchpad}")
+
+        instructed_prompt = app.add_language_instruction(prompt)
+
+        self.assertIn(
+            "Answer in the same language as the user's question",
+            instructed_prompt.template,
+        )
+        self.assertEqual(instructed_prompt.input_variables, prompt.input_variables)
+
     def test_real_executor_with_fake_services(self) -> None:
         search = Tool(
             name="search",

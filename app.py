@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from langchain.tools import tool
 from langchain_classic.agents import AgentExecutor, create_react_agent
 from langchain_community.tools.tavily_search import TavilySearchResults
+from langchain_core.prompts import PromptTemplate
 from langchain_core.tools import BaseTool
 from langchain_openai import ChatOpenAI
 from langsmith import Client
@@ -18,6 +19,18 @@ from openai import OpenAIError
 def load_configuration() -> None:
     load_dotenv(Path(__file__).with_name(".env"))
     os.environ["SSL_CERT_FILE"] = certifi.where()
+
+
+def add_language_instruction(prompt: PromptTemplate) -> PromptTemplate:
+    instruction = (
+        "Answer in the same language as the user's question. "
+        "Keep proper nouns and technical terms unchanged when appropriate.\n\n"
+    )
+    return PromptTemplate.from_template(
+        instruction + prompt.template,
+        template_format=prompt.template_format,
+        metadata=prompt.metadata,
+    )
 
 
 @tool
@@ -59,6 +72,7 @@ def create_executor(use_weather: bool) -> AgentExecutor:
         include_model=False,
         dangerously_pull_public_prompt=True,
     )
+    prompt = add_language_instruction(prompt)
     agent = create_react_agent(llm=llm, tools=tools, prompt=prompt)
     return AgentExecutor(
         agent=agent,
