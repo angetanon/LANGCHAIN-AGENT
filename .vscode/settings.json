@@ -1,0 +1,6 @@
+{
+  "[python]": {
+    "editor.tabCompletion": "onlySnippets",
+    "editor.snippetSuggestions": "top"
+  }
+}

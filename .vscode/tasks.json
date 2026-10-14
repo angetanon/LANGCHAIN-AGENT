@@ -1,0 +1,22 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Lancer interface Streamlit",
+			"type": "shell",
+			"command": "${workspaceFolder}\\venv\\Scripts\\python.exe",
+			"args": [
+				"-m",
+				"streamlit",
+				"run",
+				"${workspaceFolder}\\app.py",
+				"--server.address=127.0.0.1",
+				"--server.port=8501",
+				"--server.headless=true",
+				"--browser.gatherUsageStats=false"
+			],
+			"isBackground": true,
+			"problemMatcher": []
+		}
+	]
+}

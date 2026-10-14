@@ -1,0 +1,274 @@
+{
+  "LangChain: dotenv setup": {
+    "scope": "python",
+    "prefix": "lc-env",
+    "body": [
+      "import os",
+      "from dotenv import load_dotenv, find_dotenv",
+      "",
+      "_ = load_dotenv(find_dotenv(), override=True)",
+      "openai_api_key = os.getenv(\"OPENAI_API_KEY\")",
+      "groq_api_key = os.getenv(\"GROQ_API_KEY\")"
+    ],
+    "description": "Charge les variables d'environnement (.env) pour les clés API"
+  },
+  "LangChain: ChatOpenAI": {
+    "scope": "python",
+    "prefix": "lc-openai",
+    "body": [
+      "from langchain_openai import ChatOpenAI",
+      "",
+      "llm = ChatOpenAI(model=\"${1:gpt-3.5-turbo-0125}\", temperature=${2:0})"
+    ],
+    "description": "Import + instanciation ChatOpenAI"
+  },
+  "LangChain: ChatGroq": {
+    "scope": "python",
+    "prefix": "lc-groq",
+    "body": [
+      "from langchain_groq import ChatGroq",
+      "",
+      "llm = ChatGroq(model=\"${1:llama-3.1-8b-instant}\", temperature=${2:0})"
+    ],
+    "description": "Import + instanciation ChatGroq"
+  },
+  "LangChain: ChatOllama": {
+    "scope": "python",
+    "prefix": "lc-ollama",
+    "body": [
+      "from langchain_ollama import ChatOllama",
+      "",
+      "llm = ChatOllama(model=\"${1:llama3.2:1b}\")"
+    ],
+    "description": "Import + instanciation ChatOllama (modèle local)"
+  },
+  "LangChain: messages (Human/System)": {
+    "scope": "python",
+    "prefix": "lc-messages",
+    "body": [
+      "from langchain_core.messages import HumanMessage, SystemMessage",
+      "",
+      "messages = [",
+      "    SystemMessage(content=\"${1:You are a helpful assistant.}\"),",
+      "    HumanMessage(content=\"${2:question}\"),",
+      "]"
+    ],
+    "description": "Import HumanMessage/SystemMessage + liste de messages"
+  },
+  "LangChain: PromptTemplate": {
+    "scope": "python",
+    "prefix": "lc-prompt",
+    "body": [
+      "from langchain_core.prompts import PromptTemplate",
+      "",
+      "prompt = PromptTemplate.from_template(\"${1:{input}}\")"
+    ],
+    "description": "Import + PromptTemplate simple"
+  },
+  "LangChain: ChatPromptTemplate": {
+    "scope": "python",
+    "prefix": "lc-chatprompt",
+    "body": [
+      "from langchain_core.prompts import ChatPromptTemplate",
+      "",
+      "prompt = ChatPromptTemplate.from_messages([",
+      "    (\"system\", \"${1:You are a helpful assistant.}\"),",
+      "    (\"human\", \"${2:{input}}\"),",
+      "])"
+    ],
+    "description": "Import + ChatPromptTemplate"
+  },
+  "LangChain: JsonOutputParser": {
+    "scope": "python",
+    "prefix": "lc-jsonparser",
+    "body": [
+      "from langchain_core.output_parsers import JsonOutputParser",
+      "",
+      "parser = JsonOutputParser()"
+    ],
+    "description": "Import JsonOutputParser"
+  },
+  "LangChain: StrOutputParser": {
+    "scope": "python",
+    "prefix": "lc-strparser",
+    "body": [
+      "from langchain_core.output_parsers import StrOutputParser",
+      "",
+      "parser = StrOutputParser()"
+    ],
+    "description": "Import + StrOutputParser pour convertir les messages en texte"
+  },
+  "LangChain: RunnablePassthrough": {
+    "scope": "python",
+    "prefix": "lc-passthrough",
+    "body": [
+      "from langchain_core.runnables import RunnablePassthrough"
+    ],
+    "description": "Import RunnablePassthrough pour transmettre une entree dans une chaine LCEL"
+  },
+  "LangChain: FewShotChatMessagePromptTemplate": {
+    "scope": "python",
+    "prefix": "lc-fewshot",
+    "body": [
+      "from langchain_core.prompts import ChatPromptTemplate, FewShotChatMessagePromptTemplate"
+    ],
+    "description": "Imports pour les prompts chat avec exemples few-shot"
+  },
+  "LangChain: OpenAI completions": {
+    "scope": "python",
+    "prefix": "lc-openai-completion",
+    "body": [
+      "from langchain_openai import OpenAI"
+    ],
+    "description": "Import OpenAI pour les completions (distinct de ChatOpenAI)"
+  },
+  "LangChain: Pydantic schema": {
+    "scope": "python",
+    "prefix": "lc-pydantic",
+    "body": [
+      "from pydantic import BaseModel, Field"
+    ],
+    "description": "Imports Pydantic pour les schemas de sortie, sans langchain_core.pydantic_v1"
+  },
+  "LangChain: RAG chain imports": {
+    "scope": "python",
+    "prefix": "lc-rag-imports",
+    "body": [
+      "from langchain_openai import ChatOpenAI",
+      "from langchain_core.prompts import ChatPromptTemplate",
+      "from langchain_core.output_parsers import StrOutputParser",
+      "from langchain_core.runnables import RunnablePassthrough"
+    ],
+    "description": "Imports de la chaine RAG : modele, prompt, parseur texte et passthrough"
+  },
+  "LangChain: TextLoader": {
+    "scope": "python",
+    "prefix": "lc-textloader",
+    "body": [
+      "from langchain_community.document_loaders import TextLoader",
+      "",
+      "loader = TextLoader(\"${1:data/file.txt}\")",
+      "documents = loader.load()"
+    ],
+    "description": "Charge un fichier texte"
+  },
+  "LangChain: PyPDFLoader": {
+    "scope": "python",
+    "prefix": "lc-pdfloader",
+    "body": [
+      "from langchain_community.document_loaders import PyPDFLoader",
+      "",
+      "loader = PyPDFLoader(\"${1:data/file.pdf}\")",
+      "documents = loader.load()"
+    ],
+    "description": "Charge un fichier PDF"
+  },
+  "LangChain: CSVLoader": {
+    "scope": "python",
+    "prefix": "lc-csvloader",
+    "body": [
+      "from langchain_community.document_loaders import CSVLoader",
+      "",
+      "loader = CSVLoader(\"${1:data/file.csv}\")",
+      "documents = loader.load()"
+    ],
+    "description": "Charge un fichier CSV"
+  },
+  "LangChain: BSHTMLLoader": {
+    "scope": "python",
+    "prefix": "lc-htmlloader",
+    "body": [
+      "from langchain_community.document_loaders import BSHTMLLoader",
+      "",
+      "loader = BSHTMLLoader(\"${1:data/file.html}\")",
+      "documents = loader.load()"
+    ],
+    "description": "Charge un fichier HTML (BeautifulSoup)"
+  },
+  "LangChain: WikipediaLoader": {
+    "scope": "python",
+    "prefix": "lc-wikiloader",
+    "body": [
+      "from langchain_community.document_loaders import WikipediaLoader",
+      "",
+      "loader = WikipediaLoader(query=\"${1:topic}\", load_max_docs=${2:1})",
+      "documents = loader.load()"
+    ],
+    "description": "Charge des pages Wikipedia"
+  },
+  "LangChain: CharacterTextSplitter": {
+    "scope": "python",
+    "prefix": "lc-splitter-char",
+    "body": [
+      "from langchain_text_splitters import CharacterTextSplitter",
+      "",
+      "text_splitter = CharacterTextSplitter(chunk_size=${1:1000}, chunk_overlap=${2:200})",
+      "chunks = text_splitter.split_documents(documents)"
+    ],
+    "description": "Découpage de texte par caractères"
+  },
+  "LangChain: RecursiveCharacterTextSplitter": {
+    "scope": "python",
+    "prefix": "lc-splitter-recursive",
+    "body": [
+      "from langchain_text_splitters import RecursiveCharacterTextSplitter",
+      "",
+      "text_splitter = RecursiveCharacterTextSplitter(chunk_size=${1:1000}, chunk_overlap=${2:200})",
+      "chunks = text_splitter.split_documents(documents)"
+    ],
+    "description": "Découpage de texte récursif (recommandé)"
+  },
+  "LangChain: OpenAIEmbeddings": {
+    "scope": "python",
+    "prefix": "lc-embeddings",
+    "body": [
+      "from langchain_openai import OpenAIEmbeddings",
+      "",
+      "embeddings = OpenAIEmbeddings(model=\"${1:text-embedding-3-small}\")"
+    ],
+    "description": "Import + instanciation OpenAIEmbeddings"
+  },
+  "LangChain: FAISS vector store": {
+    "scope": "python",
+    "prefix": "lc-faiss",
+    "body": [
+      "from langchain_community.vectorstores import FAISS",
+      "",
+      "vector_db = FAISS.from_documents(chunks, embeddings)",
+      "retriever = vector_db.as_retriever(search_kwargs={\"k\": ${1:3}})"
+    ],
+    "description": "Crée un vector store FAISS + retriever"
+  },
+  "LangChain: Chroma vector store": {
+    "scope": "python",
+    "prefix": "lc-chroma",
+    "body": [
+      "from langchain_chroma import Chroma",
+      "",
+      "vector_db = Chroma.from_documents(chunks, embeddings)",
+      "retriever = vector_db.as_retriever(search_kwargs={\"k\": ${1:3}})"
+    ],
+    "description": "Crée un vector store Chroma + retriever"
+  },
+  "LangChain: RAG pipeline (full)": {
+    "scope": "python",
+    "prefix": "lc-rag",
+    "body": [
+      "from langchain_community.document_loaders import TextLoader",
+      "from langchain_text_splitters import RecursiveCharacterTextSplitter",
+      "from langchain_openai import OpenAIEmbeddings",
+      "from langchain_community.vectorstores import FAISS",
+      "",
+      "loader = TextLoader(\"${1:data/file.txt}\")",
+      "documents = loader.load()",
+      "",
+      "text_splitter = RecursiveCharacterTextSplitter(chunk_size=${2:1000}, chunk_overlap=${3:200})",
+      "chunks = text_splitter.split_documents(documents)",
+      "",
+      "embeddings = OpenAIEmbeddings()",
+      "vector_db = FAISS.from_documents(chunks, embeddings)",
+      "retriever = vector_db.as_retriever(search_kwargs={\"k\": ${4:3}})"
+    ],
+    "description": "Pipeline RAG complet : loader -> splitter -> embeddings -> FAISS -> retriever"
+  }
+}

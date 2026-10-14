@@ -1,0 +1,16 @@
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pdb
+*.egg-info
+dist/
+build/
+venv/   
+
+.mypy_cache/    
+.pytest_cache/
+.coverage
+pip-wheel-metadata/
+__pycache__/
