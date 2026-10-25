@@ -150,7 +150,7 @@ class AgentTests(unittest.TestCase):
             "{tools}\n{tool_names}\n{input}\n{agent_scratchpad}"
         )
         with (
-            patch.object(app, "TavilySearchResults", return_value=search),
+            patch.object(app, "TavilySearch", return_value=search),
             patch.object(app, "ChatOpenAI", return_value=model),
             patch.object(app, "Client") as client,
         ):

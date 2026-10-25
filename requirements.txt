@@ -1,6 +1,7 @@
 langchain==1.4.4
 langchain-classic==1.0.8
 langchain-community==0.4.2
+langchain-tavily==0.2.18
 langchain-core==1.6.9
 langchain-openai==1.7.0
 python-dotenv==1.0.1

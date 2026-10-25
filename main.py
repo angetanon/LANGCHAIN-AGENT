@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 from langchain_openai import ChatOpenAI
 from langchain.tools import tool
-from langchain_community.tools.tavily_search import TavilySearchResults
+from langchain_tavily import TavilySearch
 from langchain_core.prompts import PromptTemplate
 
 
@@ -31,7 +31,7 @@ WEATHERSTACK_API_KEY = os.getenv("WEATHERSTACK_API_KEY")
 # SEARCH TOOL
 # ==========================================
 
-search_tool = TavilySearchResults(max_results=2)
+search_tool = TavilySearch(max_results=2)
 
 # ==========================================
 # WEATHER TOOL

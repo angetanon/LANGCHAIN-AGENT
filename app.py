@@ -7,7 +7,7 @@ import streamlit as st
 from dotenv import load_dotenv
 from langchain.tools import tool
 from langchain_classic.agents import AgentExecutor, create_react_agent
-from langchain_community.tools.tavily_search import TavilySearchResults
+from langchain_tavily import TavilySearch
 from langchain_core.prompts import PromptTemplate
 from langchain_core.tools import BaseTool
 from langchain_openai import ChatOpenAI
@@ -62,7 +62,7 @@ def get_weather_data(city: str) -> str:
 
 
 def create_executor(use_weather: bool) -> AgentExecutor:
-    tools: list[BaseTool] = [TavilySearchResults(max_results=2)]
+    tools: list[BaseTool] = [TavilySearch(max_results=2)]
     if use_weather:
         tools.append(get_weather_data)
     llm = ChatOpenAI(model="gpt-3.5-turbo-0125", temperature=0, timeout=30, max_retries=1)

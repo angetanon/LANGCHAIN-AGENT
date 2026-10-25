@@ -14,12 +14,13 @@ pip install -r requirements.txt
 Depuis PowerShell, a la racine du projet :
 
 ```powershell
+python -m venv venv
 .\venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
 python -m streamlit run .\app.py
 ```
 
-L'interface reprend l'agent ReAct de `venv/research/agent_demo.ipynb`.
+L'interface reprend l'agent ReAct de `research/agent_demo.ipynb`.
 Configurez ces variables dans le fichier `.env` a la racine, sans publier vos cles :
 
 ```dotenv
@@ -29,7 +30,9 @@ WEATHERSTACK_API_KEY=votre_cle_weatherstack
 ```
 
 Saisissez une question puis cliquez sur **Interroger l'agent**. La reponse
-et les resultats des outils sont affiches. Chaque question est independante.
+et les resultats des outils sont affiches. L'agent repond dans la meme langue
+que la question, tout en conservant les noms propres et les termes techniques
+lorsque c'est approprie. Chaque question est independante.
 La meteo peut etre desactivee pour utiliser uniquement la recherche Tavily.
 Weatherstack utilise HTTPS : votre abonnement doit prendre en charge cet acces.
 Le prompt public de confiance `hwchase17/react` est charge via LangSmith,
@@ -53,9 +56,9 @@ LANGCHAIN-AGENT\
 |   |-- langchain.code-snippets  # Extraits de code pour VS Code
 |   |-- settings.json           # Configuration de l'editeur
 |   `-- tasks.json              # Tache de lancement Streamlit
+|-- research\
+|   `-- agent_demo.ipynb       # Demonstration interactive de l'agent
 |-- venv\
-|   |-- research\
-|   |   `-- agent_demo.ipynb    # Demonstration interactive de l'agent
 |   |-- Scripts\               # Interpreteur Python et activation du venv
 |   `-- Lib\                   # Dependances Python installees
 |-- .env                       # Cles API locales - ne pas publier
@@ -68,13 +71,10 @@ LANGCHAIN-AGENT\
 ```
 
 Les trois points d'entree sont `app.py` pour l'interface web, `main.py`
-pour le terminal et `venv\research\agent_demo.ipynb` pour le notebook.
+pour le terminal et `research\agent_demo.ipynb` pour le notebook.
 Le dossier `__pycache__` est genere automatiquement par Python.
 
-**Attention :** le notebook se trouve actuellement dans `venv`.
-Conservez-en une copie avant de supprimer ou recreer cet environnement.
-Pour une future reorganisation, il est preferable de placer les notebooks
-dans un dossier `research` a la racine, independant du venv.
+Le notebook est conserve dans `research`, independamment du dossier `venv`.
 
 ## Schema d'architecture
 
@@ -115,7 +115,7 @@ Les blocs applicatifs ci-dessous sont definis dans `app.py`.
                          ┌───────────────┴───────────────┐
                          │                               │
            ┌─────────────▼─────────────┐   ┌─────────────▼─────────────┐
-           │    TavilySearchResults    │   │      get_weather_data     │
+           │       TavilySearch        │   │      get_weather_data     │
            │       Recherche web       │   │      Meteo optionnelle     │
            └─────────────┬─────────────┘   └─────────────┬─────────────┘
                          │ HTTPS                         │ HTTPS
@@ -134,9 +134,10 @@ Les blocs applicatifs ci-dessous sont definis dans `app.py`.
 |---|---|
 | Streamlit | Saisie de la question, verification de la configuration et affichage des resultats. |
 | AgentExecutor | Execute la boucle ReAct et appelle les outils choisis par l'agent. |
-| ChatOpenAI | Utilise le modele OpenAI pour choisir les actions et produire la reponse finale. |
+| ChatOpenAI | Utilise le modele OpenAI pour choisir les actions et produire la reponse finale dans la langue de la question. |
 | LangSmith | Fournit le prompt public de confiance, sans charger de modele associe. |
-| TavilySearchResults | Effectue les recherches web avec un maximum de deux resultats. |
+| Consigne de langue | Complete le prompt ReAct pour demander une reponse dans la langue de la question, en conservant les noms propres et les termes techniques lorsque c'est approprie. |
+| TavilySearch | Effectue les recherches web avec un maximum de deux resultats. |
 | get_weather_data | Interroge Weatherstack via HTTPS lorsque la meteo est activee. |
 | Etat de session | Conserve la derniere reponse et les etapes des outils entre les rafraichissements Streamlit. |
 
@@ -145,9 +146,12 @@ Les blocs applicatifs ci-dessous sont definis dans `app.py`.
 1. L'application charge la configuration depuis `.env` et les variables
    d'environnement, puis verifie les cles necessaires avant tout appel.
 2. A chaque question valide, elle charge le prompt et construit un nouvel agent.
-3. L'agent choisit les outils utiles ; leurs resultats alimentent les etapes
+3. Une consigne ajoutee au prompt ReAct demande a l'agent de repondre dans
+   la langue de la question ; les noms propres et termes techniques sont
+   conserves lorsque c'est approprie.
+4. L'agent choisit les outils utiles ; leurs resultats alimentent les etapes
    suivantes jusqu'a la reponse finale ou l'arret de la boucle.
-4. L'interface affiche la reponse et permet de consulter les outils utilises.
+5. L'interface affiche la reponse et permet de consulter les outils utilises.
 
 Il n'y a pas de base de donnees ni de memoire conversationnelle.
 L'etat de session conserve seulement le dernier resultat : les questions
@@ -155,7 +159,7 @@ restent independantes. L'execution est limitee a six iterations et un budget
 de boucle de 120 secondes, controle entre les etapes, avec des delais d'attente
 specifiques pour les appels OpenAI et Weatherstack.
 
-`main.py` et `venv/research/agent_demo.ipynb` sont des points d'entree
+`main.py` et `research/agent_demo.ipynb` sont des points d'entree
 alternatifs pour la demonstration ; l'interface ne les execute pas.
 Les tests de `test_app.py` simulent les services externes pour valider
 l'interface, l'outil meteo et l'assemblage ReAct sans consommer de credits.
