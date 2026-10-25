@@ -106,7 +106,7 @@ Les blocs applicatifs ci-dessous sont definis dans `app.py`.
                                │                   │
            ┌───────────────────▼───────┐   ┌───────▼───────────────────┐
            │        ChatOpenAI         │   │     Prompt LangSmith      │
-           │   gpt-3.5-turbo-0125       │   │     hwchase17/react        │
+           │        gpt-4o-mini        │   │     hwchase17/react        │
            │       API OpenAI          │   │   Charge a la creation     │
            └───────────────────────────┘   └───────────────────────────┘
 

@@ -86,8 +86,24 @@ class InterfaceTests(unittest.TestCase):
         self.executor.invoke.side_effect = requests.ConnectionError("test-weather")
         self.submit("Meteo ?")
         self.assertTrue(self.page.error)
+        self.assertIn("service réseau", self.page.error[0].value)
+        self.assertIn("ConnectionError", self.page.error[0].value)
         self.assertNotIn("test-weather", self.page.error[0].value)
         self.assertNotIn("result", self.page.session_state)
+
+    def test_openai_error_identifies_service_without_exposing_message(self) -> None:
+        self.executor.invoke.side_effect = app.OpenAIError("private-detail")
+        self.submit("Meteo ?")
+        self.assertIn("OpenAI", self.page.error[0].value)
+        self.assertIn("OpenAIError", self.page.error[0].value)
+        self.assertNotIn("private-detail", self.page.error[0].value)
+
+    def test_langsmith_error_identifies_service_without_exposing_message(self) -> None:
+        self.executor.invoke.side_effect = app.LangSmithError("private-detail")
+        self.submit("Meteo ?")
+        self.assertIn("LangSmith", self.page.error[0].value)
+        self.assertIn("LangSmithError", self.page.error[0].value)
+        self.assertNotIn("private-detail", self.page.error[0].value)
 
 
 class WeatherTests(unittest.TestCase):
@@ -121,6 +137,25 @@ class WeatherTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "101"):
                     app.get_weather_data.invoke({"city": "Paris"})
 
+    def test_weather_http_error_explains_https_requirement(self) -> None:
+        response = Mock()
+        response.status_code = 403
+        response.raise_for_status.side_effect = requests.HTTPError(
+            "forbidden", response=response
+        )
+        with patch.dict(os.environ, {"WEATHERSTACK_API_KEY": "test-weather"}):
+            with patch.object(app.requests, "get", return_value=response):
+                with self.assertRaisesRegex(ValueError, "HTTP 403.*HTTPS"):
+                    app.get_weather_data.invoke({"city": "Paris"})
+
+    def test_weather_connection_error_is_specific(self) -> None:
+        with patch.dict(os.environ, {"WEATHERSTACK_API_KEY": "test-weather"}):
+            with patch.object(
+                app.requests, "get", side_effect=requests.ConnectionError
+            ):
+                with self.assertRaisesRegex(ValueError, "joindre Weatherstack"):
+                    app.get_weather_data.invoke({"city": "Paris"})
+
 
 class AgentTests(unittest.TestCase):
     def test_language_instruction_is_added_to_prompt(self) -> None:
@@ -151,7 +186,7 @@ class AgentTests(unittest.TestCase):
         )
         with (
             patch.object(app, "TavilySearch", return_value=search),
-            patch.object(app, "ChatOpenAI", return_value=model),
+            patch.object(app, "ChatOpenAI", return_value=model) as chat_openai,
             patch.object(app, "Client") as client,
         ):
             client.return_value.pull_prompt.return_value = prompt
@@ -160,6 +195,12 @@ class AgentTests(unittest.TestCase):
             self.assertEqual(result["output"], "Paris")
             self.assertEqual(result["intermediate_steps"][0][1], "Paris")
             self.assertIn(app.get_weather_data, executor.tools)
+            chat_openai.assert_called_once_with(
+                model="gpt-4o-mini",
+                temperature=0,
+                timeout=30,
+                max_retries=1,
+            )
             client.return_value.pull_prompt.assert_called_once_with(
                 "hwchase17/react",
                 include_model=False,

@@ -33,18 +33,38 @@ def add_language_instruction(prompt: PromptTemplate) -> PromptTemplate:
     )
 
 
+def external_error_message(service: str, error: Exception, guidance: str) -> str:
+    status_code = getattr(error, "status_code", None)
+    if status_code is None:
+        response = getattr(error, "response", None)
+        status_code = getattr(response, "status_code", None)
+    status = f", HTTP {status_code}" if isinstance(status_code, int) else ""
+    return f"Erreur {service} ({type(error).__name__}{status}). {guidance}"
+
+
 @tool
 def get_weather_data(city: str) -> str:
     """Fetch current weather information for a city using Weatherstack."""
     api_key = os.getenv("WEATHERSTACK_API_KEY")
     if not api_key:
         raise ValueError("WEATHERSTACK_API_KEY manque dans la configuration.")
-    response = requests.get(
-        "https://api.weatherstack.com/current",
-        params={"access_key": api_key, "query": city},
-        timeout=15,
-    )
-    response.raise_for_status()
+    try:
+        response = requests.get(
+            "https://api.weatherstack.com/current",
+            params={"access_key": api_key, "query": city},
+            timeout=15,
+        )
+        response.raise_for_status()
+    except requests.HTTPError as error:
+        raise ValueError(
+            f"Weatherstack a refuse la requete (HTTP {error.response.status_code}). "
+            "Verifiez la cle API et que votre abonnement prend en charge HTTPS."
+        ) from error
+    except requests.RequestException as error:
+        raise ValueError(
+            "Impossible de joindre Weatherstack. Verifiez votre connexion "
+            "et la disponibilite du service."
+        ) from error
     data = response.json()
     if "current" not in data:
         error_code = data.get("error", {}).get("code", "inconnu")
@@ -65,7 +85,12 @@ def create_executor(use_weather: bool) -> AgentExecutor:
     tools: list[BaseTool] = [TavilySearch(max_results=2)]
     if use_weather:
         tools.append(get_weather_data)
-    llm = ChatOpenAI(model="gpt-3.5-turbo-0125", temperature=0, timeout=30, max_retries=1)
+    llm = ChatOpenAI(
+        model="gpt-4o-mini",
+        temperature=0,
+        timeout=30,
+        max_retries=1,
+    )
     # Public prompt explicitly trusted for this demo, as in the notebook.
     prompt = Client().pull_prompt(
         "hwchase17/react",
@@ -126,10 +151,29 @@ def main() -> None:
                     executor = create_executor(use_weather)
                     result = executor.invoke({"input": question.strip()})
                     st.session_state["result"] = result
-            except (OpenAIError, LangSmithError, requests.RequestException):
+            except OpenAIError as error:
                 st.error(
-                    "Un service externe est inaccessible ou a refusé la requête. "
-                    "Vérifiez la connexion, les clés API, les quotas et les abonnements."
+                    external_error_message(
+                        "OpenAI",
+                        error,
+                        "Vérifiez la validité de la clé, l'accès au modèle et votre quota.",
+                    )
+                )
+            except LangSmithError as error:
+                st.error(
+                    external_error_message(
+                        "LangSmith",
+                        error,
+                        "Vérifiez la connexion et l'accès au prompt hwchase17/react.",
+                    )
+                )
+            except requests.RequestException as error:
+                st.error(
+                    external_error_message(
+                        "service réseau",
+                        error,
+                        "Vérifiez la connexion et la disponibilité du service.",
+                    )
                 )
             except ValueError as error:
                 st.error(f"L'agent n'a pas pu terminer la demande : {error}")

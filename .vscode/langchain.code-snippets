@@ -18,7 +18,7 @@
     "body": [
       "from langchain_openai import ChatOpenAI",
       "",
-      "llm = ChatOpenAI(model=\"${1:gpt-3.5-turbo-0125}\", temperature=${2:0})"
+      "llm = ChatOpenAI(model=\"${1:gpt-4o-mini}\", temperature=${2:0})"
     ],
     "description": "Import + instanciation ChatOpenAI"
   },
